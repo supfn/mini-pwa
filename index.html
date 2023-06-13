@@ -1,0 +1,70 @@
+<html>
+
+<head>
+  <title>Minimal PWA</title>
+  <meta name="viewport" content="width=device-width, user-scalable=no" />
+  <link rel="stylesheet" type="text/css" href="main.css">
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="/favicon.svg" type="image/svg" />
+</head>
+
+<body>
+  <div class="revision">Revision 10</div>
+  <img src="sw-lifecycle.svg">
+  <div class="main-text">
+    Minimal PWA, open Console for more!
+    <p id="weather"></p>
+  </div>
+  <div class="network-message">
+    Network:
+    <span id="network-status" class="">Good</span>
+  </div>
+
+  <script type="text/javascript">
+
+    async function fetchWeather() {
+      // 获取掘金首页综合文章榜
+      const url = `https://static-wzdh.2345.com/weather?areaType=2&areaId=71452&start=2023-06-13&end=2023-06-15`;
+      try {
+        const res = await fetch(url);
+        const json = await res.json();
+        const weather = json.data.weather;
+        console.log(weather)
+        const weatherText = Object.entries(weather)
+          .filter(([key, value]) => typeof value !== 'object')
+          .map(([key, value]) => `${key}: ${value}`).join('<br>')
+        document.querySelector('#weather').innerHTML = weatherText;
+      } catch (e) {
+        console.log(e)
+      }
+
+    }
+
+    window.addEventListener('load', async e => {
+
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.register('sw.js');
+          console.log('SW registered, scope:', registration.scope);
+
+        } catch (error) {
+          console.log('SW failed');
+
+        }
+      }
+
+      fetch('./data.json');
+      fetchWeather();
+
+      let statusEl = document.querySelector('#network-status')
+      if (!navigator.onLine) {
+        statusEl.classList = ['is-offline']
+        statusEl.innerText = 'Offline'
+      }
+
+    });
+
+  </script>
+</body>
+
+</html>
